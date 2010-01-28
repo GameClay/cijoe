@@ -69,6 +69,7 @@ class CIJoe
       @joe = CIJoe.new(options.project_path)
 
       CIJoe::Campfire.activate
+      CIJoe::Prowl.activate
     end
 
     def self.start(host, port, project_path)
