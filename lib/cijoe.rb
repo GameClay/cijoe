@@ -69,7 +69,6 @@ class CIJoe
     @current_build.status = status
     @current_build.output = output
     @last_build = @current_build
-
     @current_build = nil
     write_build 'current', @current_build
     write_build 'last', @last_build
@@ -85,20 +84,6 @@ class CIJoe
     Thread.new { build! }
   end
 
-  def open_pipe(cmd)
-    read, write = IO.pipe
-
-    pid = fork do
-      read.close
-      $stdout.reopen write
-      exec cmd
-    end
-
-    write.close
-
-    yield read, pid
-  end
-
   # update git then run the build
   def build!
     build = @current_build
@@ -107,21 +92,14 @@ class CIJoe
     build.sha = git_sha
     write_build 'current', build
 
-    open_pipe("#{runner_command} 2>&1") do |pipe, pid|
-      puts "#{Time.now.to_i}: Building #{build.short_sha}: pid=#{pid}"
-
+    IO.popen("#{runner_command} 2>&1") do |pipe|
       build.pid = pid
       write_build 'current', build
       output = pipe.read
     end
 
-    Process.waitpid(build.pid)
-    status = $?.exitstatus.to_i
-    puts "#{Time.now.to_i}: Built #{build.short_sha}: status=#{status}"
-
-    status == 0 ? build_worked(output) : build_failed('', output)
+    $?.exitstatus.to_i == 0 ? build_worked(output) : build_failed('', output)
   rescue Object => e
-    puts "Exception building: #{e.message} (#{e.class})"
     build_failed('', e.to_s)
   end
 
