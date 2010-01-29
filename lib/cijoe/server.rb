@@ -21,6 +21,14 @@ class CIJoe
 
       joe.last_build.sha
     end
+    
+    get '/latest' do
+      package = File.expand_path(joe.package)
+
+      halt 404 if package.nil?
+
+      send_file package
+    end
 
     get '/?' do
       erb(:template, {}, :joe => joe)

@@ -52,6 +52,11 @@ class CIJoe
     Process.kill(9, pid) if pid
     exit!
   end
+  
+  # return the produced output package
+  def package
+    Config.cijoe.package.to_s
+  end
 
   # build callbacks
   def build_failed(output, error)
