@@ -147,7 +147,7 @@ class CIJoe
           {}
         end
       env = data.collect { |k, v| %(#{k}=#{v.inspect}) }.join(" ")
-      `#{env} ./#{file}`
+      `#{env} sh #{file}`
     end
   end
 
